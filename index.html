@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minseo's Mint Farm</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --sky: #bce8d8;
+  --grass: #9ed39b;
+  --grass-dark: #6fb982;
+  --mint: #8acdb0;
+  --mint-dark: #438b6d;
+  --wood: #986b45;
+  --wood-dark: #67472f;
+  --paper: #fff4d9;
+  --ink: #60472f;
+  --pink: #f5b8c7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  background: #d5efdf;
+  font-family: 'Jua', sans-serif;
+  color: var(--ink);
+}
+
+/* 게임 전체 프레임 */
+
+.game {
+  width: min(100%, 700px);
+  background: var(--wood-dark);
+  padding: 8px;
+
+  border: 4px solid #b98a58;
+  box-shadow:
+    0 0 0 4px #553c2b,
+    0 10px 0 #7f5b3d,
+    0 20px 40px #557c5c55;
+}
+
+/* 상단 HUD */
+
+.hud {
+  background: var(--paper);
+  border: 4px solid var(--wood);
+  padding: 12px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.game-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  line-height: 1.8;
+  color: #558c68;
+}
+
+.hud-info {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hud-item {
+  background: #e2f1c9;
+  border: 2px solid #a7c98a;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+/* 게임 월드 */
+
+.world {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      #a9dff0 0%,
+      #c8edf0 43%,
+      #a8d99a 43%,
+      #8bc983 100%
+    );
+
+  border: 4px solid #553c2b;
+  border-top: none;
+}
+
+/* 구름 */
+
+.cloud {
+  position: absolute;
+  width: 65px;
+  height: 18px;
+  background: #fffdf0;
+  left: 12%;
+  top: 35px;
+
+  box-shadow:
+    12px -12px 0 #fffdf0,
+    28px -7px 0 #fffdf0,
+    38px 0 0 #fffdf0;
+}
+
+.cloud.two {
+  left: 65%;
+  top: 65px;
+  transform: scale(.7);
+}
+
+/* 태양 */
+
+.sun {
+  position: absolute;
+  top: 25px;
+  right: 15%;
+
+  width: 35px;
+  height: 35px;
+  background: #ffe58d;
+
+  box-shadow:
+    0 -7px 0 #ffe58d,
+    0 7px 0 #ffe58d,
+    7px 0 0 #ffe58d,
+    -7px 0 0 #ffe58d;
+}
+
+/* 나무 */
+
+.tree {
+  position: absolute;
+  bottom: 80px;
+  left: 8%;
+  font-size: 48px;
+  image-rendering: pixelated;
+}
+
+.tree.right {
+  left: auto;
+  right: 7%;
+}
+
+/* 농장 길 */
+
+.dirt {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 85px;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #c69a68 0px,
+      #c69a68 28px,
+      #b88a59 28px,
+      #b88a59 56px
+    );
+  border-top: 5px solid #7cae70;
+}
+
+/* 작물 */
+
+.crop-row {
+  position: absolute;
+  bottom: 45px;
+  left: 25%;
+  display: flex;
+  gap: 24px;
+  font-size: 23px;
+}
+
+/* 캐릭터 */
+
+.player {
+  position: absolute;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 48px;
+  height: 72px;
+
+  animation: walk 1.8s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes walk {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+/* 픽셀 캐릭터의 머리 */
+
+.hair {
+  position: absolute;
+  top: 0;
+  left: 9px;
+
+  width: 30px;
+  height: 24px;
+
+  background: #765039;
+
+  box-shadow:
+    -5px 5px 0 #765039,
+    5px 5px 0 #765039,
+    0 5px 0 #765039,
+    0 10px 0 #765039;
+}
+
+.face {
+  position: absolute;
+  top: 12px;
+  left: 13px;
+
+  width: 22px;
+  height: 19px;
+  background: #f7d4a6;
+
+  box-shadow:
+    -5px 0 0 #f7d4a6,
+    5px 0 0 #f7d4a6;
+}
+
+.face::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 4px;
+
+  width: 3px;
+  height: 3px;
+  background: #50392c;
+
+  box-shadow: 10px 0 0 #50392c;
+}
+
+.face::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 8px;
+
+  width: 5px;
+  height: 2px;
+  background: #d77f81;
+}
+
+/* 머리 위 꽃 */
+
+.flower {
+  position: absolute;
+  top: -7px;
+  right: 2px;
+
+  width: 7px;
+  height: 7px;
+  background: #f5b8c7;
+
+  box-shadow:
+    0 -5px 0 #f5b8c7,
+    5px 0 0 #f5b8c7,
+    -5px 0 0 #f5b8c7,
+    0 5px 0 #f5b8c7;
+}
+
+/* 옷 */
+
+.body-sprite {
+  position: absolute;
+  top: 32px;
+  left: 8px;
+
+  width: 32px;
+  height: 22px;
+  background: #8acdb0;
+
+  box-shadow:
+    -5px 0 0 #8acdb0,
+    5px 0 0 #8acdb0,
+    0 5px 0 #8acdb0;
+}
+
+.body-sprite::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 12px;
+
+  width: 7px;
+  height: 7px;
+  background: #fff4d9;
+}
+
+/* 다리 */
+
+.legs {
+  position: absolute;
+  top: 57px;
+  left: 13px;
+
+  width: 9px;
+  height: 12px;
+  background: #8c674b;
+
+  box-shadow: 13px 0 0 #8c674b;
+}
+
+/* 캐릭터 이름 */
+
+.player-name {
+  position: absolute;
+  bottom: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: #fff4d9;
+  border: 2px solid #986b45;
+
+  padding: 4px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 4;
+}
+
+/* 대화창 */
+
+.dialogue {
+  position: relative;
+  background: var(--paper);
+
+  border: 5px solid var(--wood);
+  outline: 3px solid #553c2b;
+
+  margin: 18px 10px 12px;
+  padding: 18px;
+
+  min-height: 150px;
+}
+
+.dialogue-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* 캐릭터 초상화 */
+
+.portrait {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+
+  background: #d5efdf;
+  border: 3px solid #986b45;
+
+  position: relative;
+}
+
+/* 초상화 속 픽셀 캐릭터 */
+
+.portrait .hair {
+  transform: scale(1.3);
+  transform-origin: top left;
+  left: 15px;
+  top: 9px;
+}
+
+.portrait .face {
+  transform: scale(1.3);
+  transform-origin: top left;
+  left: 19px;
+  top: 21px;
+}
+
+.portrait .body-sprite {
+  transform: scale(1.3);
+  transform-origin: top left;
+  left: 14px;
+  top: 43px;
+}
+
+.speaker {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #5e986f;
+}
+
+.dialogue-text {
+  font-size: 14px;
+  line-height: 1.9;
+  min-height: 48px;
+}
+
+.continue {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+
+  color: #8caa75;
+  font-size: 13px;
+
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* 게임 메뉴 */
+
+.menu {
+  display: flex;
+  gap: 7px;
+  padding: 8px 10px 0;
+}
+
+.menu button {
+  flex: 1;
+  border: 3px solid #67472f;
+  background: #d9b785;
+  color: #fff8df;
+
+  padding: 10px 4px;
+  font-family: 'Jua', sans-serif;
+  font-size: 12px;
+
+  cursor: pointer;
+  box-shadow: 0 3px 0 #553c2b;
+}
+
+.menu button.active {
+  background: #8acdb0;
+  color: #fff;
+  border-color: #477d61;
+}
+
+.menu button:hover {
+  filter: brightness(1.08);
+}
+
+/* 하단 상태 */
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 10px 5px;
+
+  color: #e8d2a8;
+  font-size: 11px;
+}
+
+.hearts {
+  color: #f5b8c7;
+  letter-spacing: 2px;
+}
+
+/* 모바일 */
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .world {
+    height: 250px;
+  }
+
+  .dialogue {
+    padding: 13px;
+    margin: 15px 5px 10px;
+  }
+
+  .game-title {
+    font-size: 8px;
+  }
+
+  .menu button {
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+  <!-- 게임 HUD -->
+
+  <header class="hud">
+    <div class="game-title">
+      MINSEO'S<br>MINT FARM
+    </div>
+
+    <div class="hud-info">
+      <div class="hud-item">🌸 봄 12일</div>
+      <div class="hud-item">☀️ 9:00 AM</div>
+      <div class="hud-item">🪙 250 G</div>
+    </div>
+  </header>
+
+  <!-- 농장 배경 -->
+
+  <section class="world">
+
+    <div class="cloud"></div>
+    <div class="cloud two"></div>
+    <div class="sun"></div>
+
+    <div class="tree">🌳</div>
+    <div class="tree right">🌲</div>
+
+    <div class="dirt"></div>
+
+    <div class="crop-row">
+      <span>🌱</span>
+      <span>🌷</span>
+      <span>🥕</span>
+      <span>🌱</span>
+    </div>
+
+    <!-- 민서의 픽셀 캐릭터 -->
+
+    <div class="player-name">민서 ♡</div>
+
+    <div class="player">
+      <div class="hair"></div>
+      <div class="face"></div>
+      <div class="flower"></div>
+      <div class="body-sprite"></div>
+      <div class="legs"></div>
+    </div>
+
+  </section>
+
+  <!-- NPC 대화창 -->
+
+  <section class="dialogue">
+
+    <div class="dialogue-header">
+
+      <div class="portrait">
+        <div class="hair"></div>
+        <div class="face"></div>
+        <div class="body-sprite"></div>
+      </div>
+
+      <div>
+        <div class="speaker" id="speaker">
+          민서
+        </div>
+        <div style="font-size:11px;color:#b69b75">
+          FARMER · NURSING STUDENT
+        </div>
+      </div>
+
+    </div>
+
+    <div class="dialogue-text" id="dialogue">
+      안녕하세요! 저는 강민서예요. 🌷
+      <br>
+      저의 작은 농장에 놀러 오신 걸 환영해요!
+    </div>
+
+    <div class="continue" id="continue">
+      ▼
+    </div>
+
+  </section>
+
+  <!-- 게임 메뉴 -->
+
+  <nav class="menu">
+    <button class="active" data-page="0">🏡 소개</button>
+    <button data-page="1">🌷 성격</button>
+    <button data-page="2">⭐ 능력치</button>
+    <button data-page="3">🎒 취미</button>
+    <button data-page="4">📜 퀘스트</button>
+  </nav>
+
+  <!-- 하단 HUD -->
+
+  <footer class="bottom">
+    <span>MINSEO'S JOURNAL</span>
+    <span class="hearts">♥ ♥ ♥ ♥ ♥</span>
+  </footer>
+
+</div>
+
+<script>
+const pages = [
+  {
+    speaker: "민서",
+    text: "안녕하세요! 저는 강민서예요. 🌷<br>저의 작은 농장에 놀러 오신 걸 환영해요!"
+  },
+
+  {
+    speaker: "민서",
+    text: "저는 새로운 도전을 좋아하고, 다양한 사람들과 소통하는 걸 즐겨요.<br>작은 관심도 누군가에게 큰 힘이 될 수 있다고 믿어요."
+  },
+
+  {
+    speaker: "민서",
+    text: "저의 능력치를 소개할게요!<br>💚 책임감 LV.90　💗 공감 LV.95<br>🤝 협업 LV.85"
+  },
+
+  {
+    speaker: "민서",
+    text: "제 인벤토리에는 애니메이션, 만화책, 음악, 여행, 베이킹이 들어 있어요! 🎒"
+  },
+
+  {
+    speaker: "민서",
+    text: "★ MAIN QUEST ★<br>디지털 기술과 따뜻한 공감을 함께 갖춘 간호사가 되기!<br>오늘도 한 걸음씩 성장 중이에요. 🩺"
+  }
+];
+
+const buttons = document.querySelectorAll(".menu button");
+const dialogue = document.getElementById("dialogue");
+const speaker = document.getElementById("speaker");
+const continueIcon = document.getElementById("continue");
+
+let current = 0;
+
+function changePage(index) {
+  current = index;
+
+  buttons.forEach((button, i) => {
+    button.classList.toggle("active", i === index);
+  });
+
+  speaker.textContent = pages[index].speaker;
+  dialogue.innerHTML = pages[index].text;
+
+  continueIcon.textContent =
+    index === pages.length - 1 ? "★ QUEST COMPLETE" : "▼";
+}
+
+buttons.forEach((button) => {
+  button.addEventListener("click", () => {
+    changePage(Number(button.dataset.page));
+  });
+});
+
+// 대화창을 클릭하면 다음 이야기로 이동
+document.querySelector(".dialogue").addEventListener("click", () => {
+  const next = (current + 1) % pages.length;
+  changePage(next);
+});
+
+// 방향키로도 이동
+document.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowRight") {
+    changePage((current + 1) % pages.length);
+  }
+
+  if (event.key === "ArrowLeft") {
+    changePage((current - 1 + pages.length) % pages.length);
+  }
+});
+</script>
+
+</body>
+</html>
